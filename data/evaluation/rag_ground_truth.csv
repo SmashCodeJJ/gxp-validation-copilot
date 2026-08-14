@@ -1,0 +1,9 @@
+question,expected_source_ids,answerable
+What requirement covers audit trail recording?,URS-008,true
+Which test verifies audit trail recording?,TEST-005,true
+What evidence supports backup and restore functionality?,"URS-010|TEST-006",true
+Which test validates backup and restoration?,TEST-006,true
+What requirement addresses authentication?,URS-001,true
+What test verifies unauthorized login?,TEST-001,true
+What is the maximum production line speed?,,false
+What is the bottle material?,,false

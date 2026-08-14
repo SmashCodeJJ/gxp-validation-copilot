@@ -1,0 +1,9 @@
+requirement_id,test_id,expected_coverage
+URS-001,TEST-001,partial
+URS-001,TEST-004,none
+URS-002,TEST-002,full
+URS-002,TEST-004,none
+URS-004,TEST-003,full
+URS-005,TEST-004,full
+URS-008,TEST-005,full
+URS-010,TEST-006,partial

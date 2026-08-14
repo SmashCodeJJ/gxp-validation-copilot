@@ -1,0 +1,63 @@
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: gxp-postgres
+
+    environment:
+      POSTGRES_DB: gxp_validation
+      POSTGRES_USER: gxp_user
+      POSTGRES_PASSWORD: gxp_password
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+            "CMD-SHELL",
+            "pg_isready -U gxp_user -d gxp_validation"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: gxp-api
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      DATABASE_URL: postgresql+psycopg://gxp_user:gxp_password@postgres:5432/gxp_validation
+
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
+volumes:
+  postgres_data:

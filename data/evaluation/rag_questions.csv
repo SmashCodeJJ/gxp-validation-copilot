@@ -1,0 +1,5 @@
+question,expected_source_id
+What requirement covers audit trail recording?,URS-008
+Which test verifies audit trail recording?,TEST-005
+What requirement covers backup and restore?,URS-010
+Which test validates backup and restore?,TEST-006
