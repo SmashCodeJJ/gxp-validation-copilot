@@ -1,121 +1,90 @@
 # GxP Validation Copilot
 
-GxP Validation Copilot is a FastAPI backend for analyzing validation coverage in a regulated, GxP-style system. It parses validation documents, stores structured requirements and test cases, builds traceability reports, finds semantically related evidence with vector search, and uses LLM-based review flows with conservative guardrails.
+GxP Validation Copilot is a FastAPI backend for analyzing validation coverage in a regulated, GxP-style system. It parses validation documents, stores structured requirements and test cases, builds traceability reports, retrieves semantically related evidence with vector search, and uses LLM workflows with conservative validation guardrails.
 
-The sample domain is the ABFS-100 Automated Bottle Filling System, a synthetic validation package with user requirements, validation tests, system context, risk notes, and evaluation ground truth.
+The sample package is based on the synthetic ABFS-100 Automated Bottle Filling System.
 
-## Core Capabilities
+## What The System Does
 
-| Area | What the system does |
+- Parses User Requirements Specification and validation protocol Markdown files.
+- Stores requirements and test cases in PostgreSQL.
+- Stores text embeddings in pgvector for semantic search.
+- Shows explicit traceability between requirements and tests.
+- Finds semantically similar test cases for a requirement.
+- Uses an LLM to assess whether candidate tests provide validation evidence.
+- Answers validation questions from retrieved requirement/test evidence.
+- Evaluates retrieval, RAG, and coverage behavior against ground-truth datasets.
+
+## Simple Architecture
+
+```text
+Validation Markdown
+        |
+        v
+Ingestion Parsers
+        |
+        v
+PostgreSQL + pgvector
+        |
+        v
+Service Layer  -------->  OpenAI structured outputs
+        |
+        v
+FastAPI /api/v1
+        |
+        v
+API clients, scripts, docs UI
+
+Evaluation scripts read from data/evaluation and measure system quality.
+```
+
+The key idea is separation of responsibility:
+
+- `src/ingestion/` turns source documents into structured objects.
+- `src/database/` stores and queries persistent records.
+- `src/semantic/` builds embeddings and similarity scores.
+- `src/services/` coordinates multi-step workflows.
+- `src/LLM/` contains OpenAI-backed reasoning components.
+- `src/api/` exposes the system through FastAPI routes.
+- `src/evaluation/` measures whether retrieval and AI behavior are reliable.
+
+## Development Milestones
+
+| Milestone | Focus | Result |
+| --- | --- | --- |
+| 1. Synthetic validation package | Created the ABFS-100 sample documents. | The project has realistic URS, validation tests, risk, and system context files under `data/synthetic/abfs100/`. |
+| 2. Document parsing | Added Markdown parsers for requirements and protocol tests. | The system can convert URS and test specs into Pydantic models. |
+| 3. Traceability API | Built the first FastAPI endpoints and explicit traceability report. | The API can return requirements, tests, and requirement-to-test coverage. |
+| 4. Database persistence | Added SQLAlchemy, PostgreSQL models, ingestion, repository functions, and isolated API tests. | Data is parsed once, stored in the database, and served through repository-backed endpoints. |
+| 5. Semantic retrieval | Added embeddings, pgvector columns, text builders, and vector similarity search. | Requirements and tests can be compared by meaning, not only by explicit IDs. |
+| 6. LLM coverage analysis | Added structured coverage assessment and review-priority logic. | Candidate tests can be classified as `full`, `partial`, `none`, or `uncertain` evidence for a requirement. |
+| 7. RAG question answering | Added retrieval over requirements/tests and grounded answer generation. | The system can answer validation questions using retrieved source evidence. |
+| 8. Evaluation framework | Added ground-truth CSVs and metric evaluators. | Retrieval, citation precision, abstention behavior, and coverage judgments can be measured. |
+| 9. Production readiness | Added Docker, Docker Compose, typed settings, logging, error handling, health/readiness checks, API versioning, and CI. | The application can run as a cleaner service with `/api/v1` routes and reproducible local infrastructure. |
+
+Planned next milestones:
+
+| Milestone | Focus |
 | --- | --- |
-| Document ingestion | Parses Markdown validation documents into structured requirement and test-case records. |
-| Traceability | Maps requirements to explicitly linked validation tests and highlights uncovered requirements. |
-| Semantic matching | Uses embeddings and pgvector search to find test cases that are semantically similar to a requirement. |
-| RAG question answering | Retrieves relevant requirements/tests and answers only from supplied validation context. |
-| Coverage analysis | Uses an LLM to classify whether a test provides full, partial, uncertain, or no evidence for a requirement. |
-| Evaluation | Measures retrieval, citation, abstention, and coverage quality against ground-truth datasets. |
-
-## Architecture Overview
-
-```mermaid
-flowchart LR
-    docs["Validation Documents<br/>URS, tests, risk, system overview"]
-    ingest["Ingestion Layer<br/>Markdown parsers"]
-    db[("PostgreSQL<br/>requirements, tests")]
-    vector[("pgvector<br/>384-d embeddings")]
-    api["FastAPI Application<br/>/health, /api/v1"]
-    services["Service Layer<br/>traceability, retrieval, RAG, coverage"]
-    llm["OpenAI API<br/>structured outputs"]
-    eval["Evaluation Suite<br/>ground truth + metrics"]
-    clients["API Clients<br/>docs UI, scripts, external tools"]
-
-    docs --> ingest
-    ingest --> db
-    ingest --> vector
-    clients --> api
-    api --> services
-    services --> db
-    services --> vector
-    services --> llm
-    eval --> db
-    eval --> vector
-    eval --> services
-```
-
-The project is intentionally split into small layers. Parsers do not know about API routes, API routes do not perform database queries directly unless the operation is simple, and LLM calls sit behind service/evaluator classes so they can be tested or replaced.
-
-## Runtime Request Flow
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API as FastAPI Route
-    participant Service
-    participant Repo as Repository
-    participant DB as PostgreSQL/pgvector
-    participant LLM as OpenAI
-
-    Client->>API: HTTP request
-    API->>Service: Validate request + inject dependencies
-    Service->>Repo: Query structured records or vector matches
-    Repo->>DB: SQLAlchemy select / pgvector distance
-    DB-->>Repo: Requirements, tests, similarity scores
-    Repo-->>Service: Domain records
-    opt LLM-assisted route
-        Service->>LLM: Prompt with retrieved validation evidence
-        LLM-->>Service: Structured Pydantic response
-    end
-    Service-->>API: Response model
-    API-->>Client: JSON response
-```
-
-## Data And AI Pipeline
-
-```mermaid
-flowchart TD
-    urs["URS Markdown"]
-    protocol["Validation Test Markdown"]
-    req_parser["Requirement Parser"]
-    test_parser["Protocol Parser"]
-    req_model["Requirement DTO"]
-    test_model["TestCase DTO"]
-    embedder["SentenceTransformer<br/>all-MiniLM-L6-v2"]
-    req_record["RequirementRecord<br/>text + embedding"]
-    test_record["TestCaseRecord<br/>objective, steps, expected result + embedding"]
-    trace["Traceability Report<br/>explicit links"]
-    semantic["Semantic Matches<br/>cosine distance search"]
-    rag["RAG Context<br/>requirements + tests"]
-    coverage["Coverage Assessment<br/>full / partial / none / uncertain"]
-
-    urs --> req_parser --> req_model
-    protocol --> test_parser --> test_model
-    req_model --> embedder --> req_record
-    test_model --> embedder --> test_record
-    req_record --> trace
-    test_record --> trace
-    req_record --> semantic
-    test_record --> semantic
-    req_record --> rag
-    test_record --> rag
-    req_record --> coverage
-    test_record --> coverage
-```
+| 10. Agent/tool routing | Route user intent to deterministic tools such as traceability lookup, semantic search, RAG, and coverage analysis. |
+| 11. Observability | Add better request tracing, structured metrics, latency tracking, and evaluation reports. |
+| 12. Deployment | Prepare cloud deployment configuration and production runtime documentation. |
 
 ## Main Components
 
 | Path | Responsibility |
 | --- | --- |
-| `src/api/` | FastAPI application, routes, dependency wiring, error handlers. |
-| `src/config/` | Environment-driven settings and logging configuration. |
-| `src/database/` | SQLAlchemy models, session factory, ingestion persistence, query helpers. |
+| `src/api/` | FastAPI app, route modules, dependency wiring, and error handlers. |
+| `src/config/` | Environment-based settings and logging configuration. |
+| `src/database/` | SQLAlchemy models, sessions, ingestion persistence, and repository queries. |
 | `src/ingestion/` | Markdown readers and parsers for requirements and validation protocols. |
-| `src/semantic/` | Embedding service, cosine similarity helper, semantic matcher. |
-| `src/services/` | Application workflows for RAG, retrieval, source validation, and coverage analysis. |
-| `src/LLM/` | OpenAI-backed RAG answer generation and coverage evaluation. |
-| `src/evaluation/` | Ground-truth loaders, evaluation models, metrics, thresholds, report generation. |
-| `scripts/` | Operational scripts for setup, ingestion, semantic matching, and evaluation. |
-| `tests/` | Unit and API tests for parsers, routes, repositories, retrieval metrics, and RAG helpers. |
-| `data/` | Synthetic ABFS-100 validation documents and evaluation CSV files. |
+| `src/semantic/` | Embedding service, embedding text builders, cosine similarity, and semantic matching. |
+| `src/services/` | RAG retrieval, source validation, coverage analysis, and application workflows. |
+| `src/LLM/` | OpenAI-backed RAG answerer and coverage evaluator. |
+| `src/evaluation/` | Metric models, evaluators, thresholds, and report helpers. |
+| `scripts/` | Setup, ingestion, semantic matching, and evaluation scripts. |
+| `tests/` | Unit and API tests. |
+| `data/` | Synthetic validation documents and ground-truth evaluation data. |
 
 ## API Surface
 
@@ -127,85 +96,18 @@ flowchart TD
 | `GET` | `/api/v1/tests` | List parsed validation test cases. |
 | `GET` | `/api/v1/traceability` | Show explicit requirement-to-test coverage. |
 | `GET` | `/api/v1/requirements/{requirement_id}/semantic-matches` | Rank semantically similar tests for one requirement. |
-| `GET` | `/api/v1/requirements/{requirement_id}/coverage-analysis` | Ask the LLM to assess candidate test evidence for a requirement. |
-| `POST` | `/api/v1/rag/query` | Answer validation questions from retrieved requirement/test evidence. |
+| `GET` | `/api/v1/requirements/{requirement_id}/coverage-analysis` | Assess candidate test evidence for a requirement. |
+| `POST` | `/api/v1/rag/query` | Answer validation questions from retrieved evidence. |
 
-## RAG And Coverage Guardrails
+## Guardrails
 
-```mermaid
-flowchart LR
-    question["User question"]
-    retrieve["Retrieve evidence<br/>requirements + tests"]
-    context["Build bounded context"]
-    answer["LLM structured answer"]
-    citations["Validate cited sources"]
-    review["Human review required"]
+The AI components are advisory. The system is designed to support validation review, not replace final approval.
 
-    question --> retrieve --> context --> answer --> citations --> review
-```
-
-The assistant is designed for validation support, not autonomous approval. The prompts and response models enforce conservative behavior:
-
-- Answer only from retrieved validation context.
-- Cite requirement IDs and test IDs.
-- Separate explicit traceability from semantic similarity.
-- Refuse to invent missing validation evidence.
-- Mark final decisions as requiring human review.
-
-## Data Model
-
-```mermaid
-erDiagram
-    REQUIREMENT {
-        int id PK
-        string requirement_id UK
-        text requirement_text
-        string source_document
-        vector embedding
-    }
-
-    TEST_CASE {
-        int id PK
-        string test_id UK
-        text objective
-        json related_requirements
-        json test_steps
-        text expected_result
-        string source_document
-        vector embedding
-    }
-
-    REQUIREMENT ||--o{ TEST_CASE : related_requirements
-```
-
-The explicit traceability relationship is stored inside each test case as `related_requirements`. Semantic similarity is stored separately as embeddings so the system can recommend possible evidence without treating it as approved coverage.
-
-## Evaluation Flow
-
-```mermaid
-flowchart TD
-    gt["Ground-truth CSV files"]
-    retrieval_eval["Retrieval evaluation<br/>Top-1, Recall@3"]
-    rag_eval["RAG evaluation<br/>source recall, citation precision, abstention"]
-    coverage_eval["Coverage evaluation<br/>accuracy, dangerous false positives"]
-    thresholds["Quality thresholds"]
-    report["Evaluation report"]
-
-    gt --> retrieval_eval
-    gt --> rag_eval
-    gt --> coverage_eval
-    retrieval_eval --> thresholds
-    rag_eval --> thresholds
-    coverage_eval --> thresholds
-    thresholds --> report
-```
-
-A local retrieval evaluation over the included ABFS-100 ground truth produced:
-
-- Top-1 accuracy: `75.00%`
-- Recall@3: `100.00%`
-
-These metrics help track whether retrieval changes improve evidence discovery without hiding misses that still require review.
+- RAG answers must come from retrieved validation context.
+- Responses cite requirement IDs and test IDs.
+- Semantic similarity is treated as candidate evidence, not proof of coverage.
+- Coverage assessment stays conservative for GxP validation.
+- Final validation decisions require human review.
 
 ## Local Setup
 
@@ -249,15 +151,18 @@ This loads requirements, validation tests, and embeddings for semantic retrieval
 pytest -q
 ```
 
-The test suite covers document parsing, traceability reporting, repository behavior, API endpoints, semantic similarity, retrieval evaluation, RAG evaluation helpers, and quality threshold logic.
-
 ## Run Evaluation
 
 ```bash
 python -m scripts.evaluate_retrieval
 ```
 
-Additional evaluation scripts are available under `scripts/` for coverage, RAG behavior, vector search, and system-level reporting.
+Local retrieval evaluation over the included ABFS-100 ground truth produced:
+
+- Top-1 accuracy: `75.00%`
+- Recall@3: `100.00%`
+
+Additional evaluation scripts are available under `scripts/`.
 
 ## Tech Stack
 
@@ -267,7 +172,7 @@ Additional evaluation scripts are available under `scripts/` for coverage, RAG b
 | Persistence | SQLAlchemy, PostgreSQL |
 | Vector search | pgvector, SentenceTransformers |
 | LLM workflows | OpenAI API structured outputs |
-| Testing and evaluation | Pytest, custom metric evaluators |
+| Testing and evaluation | Pytest, custom evaluators |
 | Runtime | Docker, Docker Compose |
 | CI | GitHub Actions |
 
