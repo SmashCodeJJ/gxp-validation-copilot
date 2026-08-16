@@ -13,6 +13,8 @@ The sample package is based on the synthetic ABFS-100 Automated Bottle Filling S
 - Finds semantically similar test cases for a requirement.
 - Uses an LLM to assess whether candidate tests provide validation evidence.
 - Answers validation questions from retrieved requirement/test evidence.
+- Routes user questions to the right capability instead of sending every
+  request through RAG.
 - Evaluates retrieval, RAG, and coverage behavior against ground-truth datasets.
 
 ## Simple Architecture
@@ -61,12 +63,12 @@ The key idea is separation of responsibility:
 | 7. RAG question answering | Added retrieval over requirements/tests and grounded answer generation. | The system can answer validation questions using retrieved source evidence. |
 | 8. Evaluation framework | Added ground-truth CSVs and metric evaluators. | Retrieval, citation precision, abstention behavior, and coverage judgments can be measured. |
 | 9. Production readiness | Added Docker, Docker Compose, typed settings, logging, error handling, health/readiness checks, API versioning, and CI. | The application can run as a cleaner service with `/api/v1` routes and reproducible local infrastructure. |
+| 10. Agent/tool routing | Added an agent router, deterministic tools, an agent orchestration service, routing evaluation data, and an agent API endpoint. | User questions can be routed to traceability, semantic search, coverage analysis, or RAG based on intent. |
 
 Planned next milestones:
 
 | Milestone | Focus |
 | --- | --- |
-| 10. Agent/tool routing | Route user intent to deterministic tools such as traceability lookup, semantic search, RAG, and coverage analysis. |
 | 11. Observability | Add better request tracing, structured metrics, latency tracking, and evaluation reports. |
 | 12. Deployment | Prepare cloud deployment configuration and production runtime documentation. |
 
@@ -98,6 +100,7 @@ Planned next milestones:
 | `GET` | `/api/v1/requirements/{requirement_id}/semantic-matches` | Rank semantically similar tests for one requirement. |
 | `GET` | `/api/v1/requirements/{requirement_id}/coverage-analysis` | Assess candidate test evidence for a requirement. |
 | `POST` | `/api/v1/rag/query` | Answer validation questions from retrieved evidence. |
+| `POST` | `/api/v1/agent/query` | Route a user question to the appropriate validation tool. |
 
 ## Guardrails
 

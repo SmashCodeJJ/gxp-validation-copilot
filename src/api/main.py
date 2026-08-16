@@ -6,6 +6,9 @@ from src.api.exception_handlers import (
     unexpected_error_handler,
     value_error_handler,
 )
+from src.api.routes.agent import (
+    router as agent_router,
+)
 from src.api.routes.health import (
     router as health_router,
 )
@@ -54,6 +57,11 @@ app.include_router(
 
 app.include_router(
     rag_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    agent_router,
     prefix="/api/v1",
 )
 

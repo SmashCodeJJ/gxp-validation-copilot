@@ -1,0 +1,9 @@
+question,expected_tool
+Which requirements have no explicit test coverage?,traceability
+Is URS-003 explicitly traced to a test?,traceability
+Show similar tests for URS-004.,semantic_search
+Which tests are semantically related to URS-007?,semantic_search
+Does URS-008 have adequate validation coverage?,coverage_analysis
+Analyze coverage for URS-010.,coverage_analysis
+Explain audit trail validation evidence.,rag
+What documentation discusses backup and restore?,rag
