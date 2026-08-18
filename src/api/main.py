@@ -18,9 +18,11 @@ from src.api.routes.rag import (
 from src.api.routes.validation import (
     router as validation_router,
 )
+from src.api.middleware.request_context import (
+    RequestContextMiddleware,
+)
 from src.config.logging import configure_logging
 from src.config.settings import get_settings
-
 
 configure_logging()
 
@@ -31,7 +33,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
-    version="1.0.0",
+    version=settings.app_version,
 )
 
 
@@ -65,6 +67,9 @@ app.include_router(
     prefix="/api/v1",
 )
 
+app.add_middleware(
+    RequestContextMiddleware
+)
 
 logger.info(
     "Application initialized environment=%s",

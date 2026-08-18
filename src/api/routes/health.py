@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from src.api.dependencies import (
     get_database_session,
 )
+from src.config.settings import get_settings
 
 
 router = APIRouter()
@@ -19,6 +20,17 @@ router = APIRouter()
 def health() -> dict[str, str]:
     return {
         "status": "ok",
+    }
+
+
+@router.get("/version")
+def version() -> dict[str, str]:
+    settings = get_settings()
+
+    return {
+        "app_name": settings.app_name,
+        "version": settings.app_version,
+        "environment": settings.environment,
     }
 
 

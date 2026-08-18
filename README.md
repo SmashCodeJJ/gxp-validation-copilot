@@ -64,13 +64,8 @@ The key idea is separation of responsibility:
 | 8. Evaluation framework | Added ground-truth CSVs and metric evaluators. | Retrieval, citation precision, abstention behavior, and coverage judgments can be measured. |
 | 9. Production readiness | Added Docker, Docker Compose, typed settings, logging, error handling, health/readiness checks, API versioning, and CI. | The application can run as a cleaner service with `/api/v1` routes and reproducible local infrastructure. |
 | 10. Agent/tool routing | Added an agent router, deterministic tools, an agent orchestration service, routing evaluation data, and an agent API endpoint. | User questions can be routed to traceability, semantic search, coverage analysis, or RAG based on intent. |
-
-Planned next milestones:
-
-| Milestone | Focus |
-| --- | --- |
-| 11. Observability | Add better request tracing, structured metrics, latency tracking, and evaluation reports. |
-| 12. Deployment | Prepare cloud deployment configuration and production runtime documentation. |
+| 11. Production observability | Added request IDs, request lifecycle logs, runtime metadata, LLM/RAG/agent logging hooks, and log-focused tests. | Production issues can be traced with `X-Request-ID`, endpoint, status, and duration details. |
+| 12. Deployment and portfolio polish | Added deployment configuration, Docker hardening, a runbook, architecture summary, interview guide, and readiness tests. | The project is ready to explain, verify, containerize, and present as a portfolio backend project. |
 
 ## Main Components
 
@@ -87,6 +82,9 @@ Planned next milestones:
 | `scripts/` | Setup, ingestion, semantic matching, and evaluation scripts. |
 | `tests/` | Unit and API tests. |
 | `data/` | Synthetic validation documents and ground-truth evaluation data. |
+| `docs/ARCHITECTURE.md` | Interview-ready architecture summary. |
+| `docs/DEPLOYMENT_RUNBOOK.md` | Deployment, verification, and operations checklist. |
+| `docs/PORTFOLIO_INTERVIEW_GUIDE.md` | Portfolio pitch, resume bullets, and interview talking points. |
 
 ## API Surface
 
@@ -94,6 +92,7 @@ Planned next milestones:
 | --- | --- | --- |
 | `GET` | `/health` | Basic service health check. |
 | `GET` | `/ready` | Readiness check including database connectivity. |
+| `GET` | `/version` | Runtime app name, version, and environment. |
 | `GET` | `/api/v1/requirements` | List parsed user requirements. |
 | `GET` | `/api/v1/tests` | List parsed validation test cases. |
 | `GET` | `/api/v1/traceability` | Show explicit requirement-to-test coverage. |
@@ -152,6 +151,30 @@ This loads requirements, validation tests, and embeddings for semantic retrieval
 
 ```bash
 pytest -q
+```
+
+## Deployment Readiness
+
+Milestone 12 documentation is under `docs/`:
+
+- `docs/ARCHITECTURE.md`
+- `docs/DEPLOYMENT_RUNBOOK.md`
+- `docs/PORTFOLIO_INTERVIEW_GUIDE.md`
+
+Before a release, verify:
+
+```bash
+pytest -q
+docker build -t gxp-validation-copilot:test .
+docker compose up --build
+```
+
+Then check:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/ready
+curl http://localhost:8000/version
 ```
 
 ## Run Evaluation

@@ -37,7 +37,8 @@ def get_coverage_evaluator() -> CoverageEvaluator:
     settings = get_settings()
 
     return CoverageEvaluator(
-        model_name=settings.openai_model
+        model_name=settings.openai_model,
+        api_key = settings.openai_api_key,
     )
 
 
@@ -53,7 +54,8 @@ def get_rag_service() -> RagService:
     )
 
     answerer = RagAnswerer(
-        model_name=settings.openai_model
+        model_name=settings.openai_model,
+        api_key = settings.openai_api_key,
     )
 
     return RagService(
@@ -66,7 +68,8 @@ def get_agent_service() -> AgentService:
     settings = get_settings()
 
     router = AgentRouter(
-        model_name=settings.openai_model
+        model_name=settings.openai_model,
+        api_key = settings.openai_api_key,
     )
 
     coverage_service = CoverageAnalysisService(

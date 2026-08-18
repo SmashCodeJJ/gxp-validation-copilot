@@ -1,8 +1,9 @@
-.venv
-venv
-
 .git
 .gitignore
+.github
+
+.venv
+venv
 
 __pycache__
 *.pyc
@@ -11,7 +12,7 @@ __pycache__
 .idea
 
 .env
-
 reports/
-
+outputs
+work
 .DS_Store

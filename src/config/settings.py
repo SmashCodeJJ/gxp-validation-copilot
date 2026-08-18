@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "GxP Validation Copilot"
+    app_version: str = "1.0.0"
     environment: str = "development"
 
     database_url: str
@@ -36,6 +37,17 @@ class Settings(BaseSettings):
     )
 
     log_level: str = "INFO"
+    api_host: str = "0.0.0.0"
+    api_port: int = Field(
+        default=8000,
+        ge=1,
+        le=65535,
+    )
+    api_workers: int = Field(
+        default=1,
+        ge=1,
+        le=8,
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -45,6 +57,6 @@ class Settings(BaseSettings):
     )
 
 
-@lru_cache # for recreating get_settings()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()
