@@ -40,7 +40,7 @@ This project demonstrates one possible backend architecture for that problem.
 | Agent routing | Sends user questions to the right tool: traceability, semantic search, coverage analysis, or RAG. |
 | Evaluation | Measures retrieval, RAG, coverage analysis, and routing behavior against ground-truth datasets. |
 | Observability | Adds request IDs, request lifecycle logs, runtime metadata, and health/readiness checks. |
-| Deployment readiness | Includes Docker, Docker Compose, CI, runbook documentation, and portfolio/interview notes. |
+| Deployment readiness | Includes Docker, Docker Compose, CI, runbook documentation, and project summary notes. |
 
 ## Example Questions The System Supports
 
@@ -137,7 +137,7 @@ The code is intentionally separated by responsibility:
 | `src/evaluation/` | Measures whether retrieval and AI behavior are reliable. |
 | `src/api/` | Exposes the system through FastAPI routes, middleware, and error handlers. |
 | `data/` | Contains synthetic validation documents and evaluation data. |
-| `docs/` | Contains architecture, deployment, and interview-ready documentation. |
+| `docs/` | Contains architecture, deployment, and project summary documentation. |
 
 ## GxP And AI Guardrails
 
@@ -259,11 +259,11 @@ Additional evaluation scripts are available under `scripts/`.
 | 9 | Production readiness | Added Docker, Compose, settings, logging, error handling, health/readiness checks, API versioning, and CI. |
 | 10 | Agent/tool routing | Added a router that chooses deterministic tools or AI workflows based on user intent. |
 | 11 | Production observability | Added request IDs, request lifecycle logs, runtime metadata, and observability tests. |
-| 12 | Deployment and portfolio polish | Added deployment configuration, Docker hardening, runbook docs, architecture docs, and interview guide. |
+| 12 | Deployment and project polish | Added deployment configuration, Docker hardening, runbook docs, architecture docs, and project summary notes. |
 
-## Portfolio Notes
+## Project Highlights
 
-This project is useful for interviews because it shows more than a basic chatbot:
+This project demonstrates more than a basic chatbot:
 
 - Backend API design with FastAPI
 - Database modeling and repository patterns
@@ -276,11 +276,11 @@ This project is useful for interviews because it shows more than a basic chatbot
 - Production observability basics
 - GxP-aware thinking around evidence, traceability, and human review
 
-More detailed portfolio and interview material:
+More detailed project documentation:
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/DEPLOYMENT_RUNBOOK.md`](docs/DEPLOYMENT_RUNBOOK.md)
-- [`docs/PORTFOLIO_INTERVIEW_GUIDE.md`](docs/PORTFOLIO_INTERVIEW_GUIDE.md)
+- [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md)
 
 ## Author
 

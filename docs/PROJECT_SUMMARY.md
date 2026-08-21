@@ -1,10 +1,10 @@
-# Portfolio And Interview Guide
+# Project Summary
 
-## Project Pitch
+## Project Overview
 
 GxP Validation Copilot is a backend project that shows how AI can support regulated validation work without replacing human approval. It parses requirements and test protocols, builds traceability, retrieves semantically related evidence, runs conservative LLM coverage analysis, answers grounded RAG questions, routes user requests to the right tool, and evaluates the system against ground-truth datasets.
 
-## What To Emphasize
+## Core Design Points
 
 - Deterministic traceability is the source of truth.
 - Semantic search finds candidate evidence but does not prove coverage.
@@ -13,7 +13,7 @@ GxP Validation Copilot is a backend project that shows how AI can support regula
 - Evaluation data makes AI behavior measurable instead of purely subjective.
 - Deployment readiness includes Docker, health probes, readiness checks, request IDs, logs, and CI.
 
-## Architecture Talking Points
+## Architecture Notes
 
 - FastAPI provides a clean API layer with `/api/v1` routes.
 - PostgreSQL stores requirements and tests.
@@ -23,7 +23,7 @@ GxP Validation Copilot is a backend project that shows how AI can support regula
 - Pytest covers parsers, services, API behavior, evaluation metrics, routing, and observability.
 - Docker Compose gives a repeatable local production-like environment.
 
-## Interview Questions To Prepare
+## Key Technical Decisions
 
 | Question | Strong Answer Direction |
 | --- | --- |
@@ -31,9 +31,9 @@ GxP Validation Copilot is a backend project that shows how AI can support regula
 | How do you reduce hallucination risk? | Restrict context, use structured outputs, validate cited sources, keep conservative prompts, and require human review. |
 | How do you know retrieval works? | Use ground-truth evaluation data and metrics such as top-1 accuracy and recall@k. |
 | What makes this GxP-aware? | The system separates evidence from interpretation, preserves traceability, logs behavior, and treats AI as advisory. |
-| What would you improve next? | Add migrations, authentication, role-based access, production metrics storage, audit trails, and cloud deployment automation. |
+| What would be improved next? | Add migrations, authentication, role-based access, production metrics storage, audit trails, and cloud deployment automation. |
 
-## Resume Bullet Options
+## Project Highlights
 
 - Built a FastAPI-based GxP Validation Copilot that parses validation documents, stores requirements/tests in PostgreSQL, and generates traceability reports.
 - Implemented pgvector-backed semantic retrieval and grounded RAG workflows with source validation and human-review guardrails.
